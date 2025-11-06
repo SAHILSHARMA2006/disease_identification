@@ -1,0 +1,10 @@
+
+venv/
+pycache/
+*.pyc
+
+.env
+
+*.h5
+*.tflite
+*.pt

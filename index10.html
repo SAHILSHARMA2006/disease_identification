@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">AgriMind Advisor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Mic Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base Reset */
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Theme tokens - Softer Colors */
+        :root {
+            --surface: rgba(255, 255, 255, 0.95); /* Slightly less transparent */
+            --text: #374151; /* Darker gray for better contrast */
+            --subtext: #6b7280;
+            --primary: #1e88e5; /* Mid Blue */
+            --primary-strong: #0d47a1; /* Strong Blue */
+            --accent: #43a047; /* Mid Green */
+            --accent-light: #e8f5e9; /* Light Green */
+            --ring: rgba(67, 160, 71, 0.25);
+            --border: #d1d5db;
+        }
+        .dark {
+            --surface: rgba(31, 41, 55, 0.9);
+            --text: #f3f4f6;
+            --subtext: #9ca3af;
+            --primary: #90caf9;
+            --primary-strong: #64b5f6;
+            --accent: #a5d6a7;
+            --accent-light: #374151;
+            --ring: rgba(165, 214, 167, 0.25);
+            --border: #4b5563;
+        }
+
+        /* Body & Background */
+        body {
+            font-family: 'Quicksand', sans-serif, Arial, Helvetica; /* Applied a friendlier font for body */
+            background: url("https://cdn.pixabay.com/photo/2022/06/22/09/29/agricultural-7277520_1280.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+            backdrop-filter: blur(6px); /
+        }
+
+        .container {
+            max-width: 850px; 
+            width: 90%;
+            margin: 2rem auto;
+            padding: 2.5rem; 
+            background: var(--surface);
+            border-radius: 20px; 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); 
+            position: relative;
+        }
+
+
+        h1, p { text-align: center; }
+
+        h1 {
+            color: var(--primary-strong); /* Use primary color */
+            font-size: 4.5rem !important; /* Larger title */
+            line-height: 1.1 !important;
+            margin-bottom: 0.5rem !important;
+            font-family: "Playfair Display", serif !important;
+            font-weight: 800 !important; /* Bolder title */
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        .dark h1 {
+             color: #bbdefb !important; /* Lighter blue */
+             text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.1);
+        }
+        
+        p.subtitle {
+            margin-top: 5px;
+            font-size: 1.1rem; /* Larger subtitle */
+            color: var(--subtext);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        /* Language Toggle (RE-ADDED) */
+        .language-toggle {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--subtext);
+            font-weight: 600;
+        }
+        .lang-option input[type="radio"] {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #555;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .lang-option input[type="radio"]:checked {
+            border-color: #2196f3;
+        }
+        .lang-option input[type="radio"]:checked::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 8px;
+            height: 8px;
+            background: #2196f3;
+            border-radius: 50%;
+        }
+
+
+        /* Carousel Enhancements */
+        .carousel-box {
+            width: 80%; /* Wider carousel */
+            max-width: 600px;
+            height: 250px; /* Taller */
+            margin: 2rem auto;
+            border: 5px solid var(--accent); /* Nice border highlight */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .carousel-track {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            animation: slide 15s infinite ease-in-out;
+        }
+        .carousel-item {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center 30%; 
+            transition: transform 0.8s ease-in-out; 
+        }
+        @keyframes slide {
+            0%, 26% { transform: translateX(0%); }
+            33%, 59% { transform: translateX(-33.33%); } 
+            66%, 95% { transform: translateX(-66.66%); } 
+            100% { transform: translateX(0%); }
+        }
+
+        /* Form Area */
+        .form-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; 
+            align-items: center;
+            position: relative;
+        }
+
+       .textarea-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px; 
+            margin: 0 auto; 
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px; 
+            padding: 20px 65px 20px 20px; 
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            resize: vertical;
+            font-size: 1.05rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--ring);
+        }
+
+        .mic-icon {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            background: var(--accent);
+            color: #377042;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 1.1rem; 
+        }
+        .mic-icon:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+            color: white;
+        }
+        
+        .mic-icon.is-listening {
+            background: #e53935;
+            transform: scale(1.1);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(229, 57, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
+        }
+
+
+        /* Buttons */
+        .upload-btn {
+            background: var(--accent-light);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            border-radius: 20px; 
+            padding: 12px 25px;
+            font-weight: 600;
+            max-width: 350px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center; 
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .upload-btn.dragover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .analyze-btn { 
+            background: var(--primary); 
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: var(--primary-strong);
+            box-shadow: 0 8px 20px rgba(30, 136, 229, 0.4);
+            transform: scale(1.03);
+        }
+        
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            transform: scale(0.98);
+            cursor: not-allowed;
+        }
+
+        /* --- CRITICAL FIX FOR "TWO BUTTONS" BUG --- */
+        input[type="file"] {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        /* Preview Image */
+        .preview-img {
+            max-width: 400px;
+            max-height: 200px;
+            border: 3px solid var(--accent);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--primary-strong); 
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .dark .loading-text {
+            color: var(--primary);
+        }
+
+    
+        #results-area {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .dark #results-area {
+            background: #232f3e; 
+            border: 1px solid #4b5563;
+        }
+
+        #results-area h2 {
+            font-size: 2.2rem;
+            color: var(--primary-strong);
+            border-color: var(--accent);
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+        }
+        .dark #results-area h2 {
+             color: var(--primary);
+        }
+
+        /* Result Cards */
+        #results-area > div > div {
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        #result-diagnosis {
+            font-size: 1.5rem;
+            color: var(--primary-strong);
+            font-weight: 700;
+        }
+        .dark #result-diagnosis {
+            color: var(--primary);
+        }
+
+        .p-3 {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--border);
+        }
+        .dark .p-3 {
+            background: #374151;
+            border: 1px solid #4b5563;
+        }
+
+        /* Severity Colors */
+        .severity-low { background: #e8f5e9 !important; border-color: #4CAF50 !important; color: #1b5e20; }
+        .severity-medium { background: #fffde7 !important; border-color: #ffb300 !important; color: #ff8f00; }
+        .severity-high { background: #ffebee !important; border-color: #e53935 !important; color: #c62828; }
+
+        .dark .severity-low { background: #1b5e20 !important; border-color: #4CAF50 !important; color: #e8f5e9; }
+        .dark .severity-medium { background: #ff8f00 !important; border-color: #ffb300 !important; color: #fffde7; }
+        .dark .severity-high { background: #c62828 !important; border-color: #e53935 !important; color: #ffebee; }
+        
+        #result-severity { font-size: 1.8rem; font-weight: 700; }
+
+        /* Symptoms & Cause */
+        .bg-yellow-50 {
+            background: #fff8e1 !important;
+            border-color: #ffd54f !important;
+        }
+        .dark .bg-yellow-50 {
+            background: #423424 !important;
+            border-color: #795548 !important;
+        }
+        .dark .text-yellow-800 { color: #ffe082; }
+        .dark .text-yellow-900 { color: #fff8e1; }
+
+
+        /* Action Plan */
+        .bg-green-50 {
+            background: #e8f5e9 !important;
+            border-color: #81c784 !important;
+        }
+        .dark .bg-green-50 {
+            background: #143015 !important;
+            border-color: #4caf50 !important;
+        }
+        .dark .text-green-800 { color: #a5d6a7; }
+
+        #result-action-plan {
+            padding-left: 20px;
+            line-height: 1.6;
+            font-size: 1.05rem; /* Larger plan text */
+        }
+        #result-action-plan li {
+            margin-bottom: 8px;
+        }
+        #result-action-plan li::marker {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .dark #result-action-plan li::marker {
+            color: var(--accent);
+        }
+        
+        /* Toast Message */
+        .toast {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: toast-in 0.5s ease forwards;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PDF & Speak Button Common Style --- */
+        .pdf-btn, .speak-btn {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 1rem;
+        }
+
+        /* PDF Button */
+        .pdf-btn {
+            background: var(--accent);
+            box-shadow: 0 6px 15px rgba(67, 160, 71, 0.3);
+        }
+        .pdf-btn:hover {
+            background: #2e7d32;
+            box-shadow: 0 8px 20px rgba(67, 160, 71, 0.4);
+            transform: scale(1.03);
+        }
+        .dark .pdf-btn {
+            background: var(--accent);
+            color: #1b5e20;
+        }
+        .dark .pdf-btn:hover {
+             background: #81c784;
+        }
+
+        /* Speak Button */
+        .speak-btn {
+            background: var(--primary);
+             box-shadow: 0 6px 15px rgba(30, 136, 229, 0.3);
+        }
+        .speak-btn:hover {
+            background: var(--primary-strong);
+            transform: scale(1.03);
+        }
+        .dark .speak-btn {
+            background: var(--primary);
+            color: #0d47a1;
+        }
+        .dark .speak-btn:hover {
+            background: #64b5f6;
+        }
+        /* Style for when TTS is active */
+        .speak-btn.is-speaking {
+            background: #e53935; /* Red */
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+    </style>
+</head>
+
+<body class="dark"> <!-- DARK MODE APPLIED BY DEFAULT -->
+    <div class="container">
+        <!-- Language Toggle (RE-ADDED) -->
+        <div class="language-toggle">
+            <label class="lang-option">
+                <input type="radio" name="language" value="en" checked>
+                English
+            </label>
+            <label class="lang-option">
+                <input type="radio" name="language" value="hi">
+                हिन्दी
+            </label>
+            <!-- Theme Toggle REMOVED -->
+        </div>
+
+        <h1 id="main-title">🌿 AgriMind Advisor</h1>
+        <p id="subtitle" class="subtitle">
+            Describe crop symptoms, speak, or upload an image to get a focused 3-day plan.
+        </p>
+
+        <!-- Carousel -->
+        <div class="carousel-box">
+          <div class="carousel-track">
+            <!-- UPDATED IMAGES -->
+            <div class="carousel-item" style="background-image: url('https://cdn.mos.cms.futurecdn.net/CR2pAVBK3Hy7DsUoqiDsGM.jpg');"></div>
+            <div class="carousel-item" style="background-image: url('https://www.marthastewart.com/thmb/zoQ7fWpMfxlCI9_ePGnCvznHJqY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/ms-peach-tree-getty-70e44fdf9edb440888671586bf527b5d.jpg');"></div>
+            <div class="carousel-item" style="background-image: url('https://kj1bcdn.b-cdn.net/media/69598/corn-2.jpg');"></div>
+          </div>
+        </div>
+
+        <!-- Form Area -->
+        <div class="form-area">
+            
+            <!-- 1. Text/Voice Input -->
+            <div class="textarea-container">
+                <textarea id="symptom-text" placeholder="Describe crop symptoms (e.g., 'Leaves are yellowing and curling, it is a tomato plant')..."></textarea>
+                <button id="mic-btn" class="mic-icon" title="Speak">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+            </div>
+            
+            <!-- 2. Image Upload Area -->
+            <div class="flex flex-col items-center w-full">
+                
+                <label for="file-upload" id="upload-label" class="upload-btn dropzone w-full max-w-sm justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14m-7-7h14"/>
+                    </svg>
+                    Upload Leaf Image
+                </label>
+                <!-- This is the actual file input, reliably hidden with CSS -->
+                <input type="file" id="file-upload" accept="image/*" /> 
+
+                <!-- Image Preview -->
+                <img id="image-preview" class="preview-img hidden mt-3" alt="Image Preview">
+                <p id="placeholder-text" class="text-sm mt-3 font-semibold" style="color: var(--subtext);">No image selected.</p>
+            </div>
+            
+            
+            <!-- 3. The Combined Submission Button -->
+            <button id="analyze-btn" class="analyze-btn mt-5 flex items-center justify-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                <span id="button-text">Analyze & Get Expert Advice</span>
+            </button>
+
+            
+            <!-- Loading State -->
+            <div id="loading-message" class="hidden mt-4 w-full max-w-lg text-center">
+                <div class="flex items-center space-x-3 justify-center">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Running Deep Learning & Gemini Pro...</p>
+                </div>
+            </div>
+            
+            
+            <!-- Message/Error Box -->
+            <div id="message-box" class="hidden toast w-full max-w-lg mt-4 p-4 rounded-xl font-semibold text-center text-md" role="status" aria-live="polite"></div>
+        </div>
+        
+        
+        <!-- --- RESULTS DISPLAY AREA --- -->
+        <section id="results-area" class="mt-10 hidden">
+            <h2 id="results-title" class="text-3xl font-extrabold mb-5 border-b-2 pb-3 text-left">🔬 Diagnosis Report (Gemini Pro)</h2>
+            
+            <!-- Key Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-md">
+                    <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">Official Diagnosis</p>
+                    <p id="result-diagnosis" class="text-2xl font-extrabold text-primary-strong dark:text-primary mt-1"></p>
+                </div>
+                <div class="p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-md">
+                    <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">AI Confidence</p>
+                    <p id="result-confidence" class="text-2xl font-extrabold text-accent mt-1"></p>
+                </div>
+                <div id="severity-box" class="p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-md">
+                    <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">Urgency (1-10)</p>
+                    <p id="result-severity" class="text-3xl font-extrabold mt-1"></p>
+                </div>
+            </div>
+
+            <!-- Symptoms & Cause -->
+            <div class="mb-8 p-6 bg-yellow-50 rounded-xl border border-yellow-300 shadow-lg">
+                <h3 id="symptoms-title" class="text-xl font-bold text-yellow-800 dark:text-yellow-300 mb-2 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Symptoms & Root Cause
+                </h3>
+                <p id="result-symptoms-cause" class="text-gray-700 dark:text-gray-300 text-base leading-relaxed"></p>
+            </div>
+            
+            <!-- Action Plan -->
+            <div class="mb-8 p-6 bg-green-50 rounded-xl border border-green-300 shadow-lg">
+                <h3 id="plan-title" class="text-xl font-bold text-green-800 dark:text-green-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    Immediate Action Plan
+                </h3>
+                <ul id="result-action-plan" class="list-decimal pl-6 space-y-3 text-gray-800 dark:text-gray-200 text-lg"></ul>
+            </div>
+
+            <div class="text-center space-x-4">
+                <button id="speak-btn" class="speak-btn">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span id="speak-button-text">Speak Report</span>
+                </button>
+
+                <button id="download-pdf-btn" class="pdf-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L6.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    <span id="pdf-button-text">Download Report</span>
+                </button>
+            </div>
+
+        </section>
+    </div>
+
+    <script>
+        // --- CRITICAL CONFIGURATION: API ENDPOINT ---
+        const API_URL = 'http://127.0.0.1:8000/diagnose_image'; 
+        
+        // --- DOM Elements ---
+        const radios = document.querySelectorAll('input[name="language"]');
+        const fileInput = document.getElementById('file-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const placeholderText = document.getElementById('placeholder-text');
+        const symptomsTextarea = document.getElementById('symptom-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageBox = document.getElementById('message-box');
+        const resultsArea = document.getElementById('results-area');
+        const micBtn = document.getElementById('mic-btn');
+        const uploadLabel = document.getElementById('upload-label');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn'); 
+        const speakBtn = document.getElementById('speak-btn'); // New Speak Button
+
+        // Result display elements
+        const resDiagnosis = document.getElementById('result-diagnosis');
+        const resConfidence = document.getElementById('result-confidence');
+        const resSeverity = document.getElementById('result-severity');
+        const resSymptomsCause = document.getElementById('result-symptoms-cause');
+        const resActionPlan = document.getElementById('result-action-plan');
+        const severityBox = document.getElementById('severity-box');
+
+        let selectedImage = null; // This will store the COMPRESSED blob
+        let lastAnalysisData = null; // Stores the raw JSON data for the PDF
+        let currentLang = "en";
+        let isSpeaking = false; // TTS state
+
+        // --- Utility Functions ---
+
+        function displayMessage(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.className = 'w-full max-w-lg mt-4 p-4 rounded-xl font-semibold text-center text-md toast';
+            
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'border', 'border-red-500', 'text-red-800', 'dark:bg-red-900', 'dark:border-red-600', 'dark:text-red-200');
+            } else if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'border', 'border-green-500', 'text-green-800', 'dark:bg-green-900', 'dark:border-green-600', 'dark:text-green-200');
+            } else {
+                messageBox.classList.add('bg-blue-100', 'border', 'border-blue-500', 'text-blue-800', 'dark:bg-blue-900', 'dark:border-blue-600', 'dark:text-blue-200');
+            }
+            messageBox.classList.remove('hidden');
+            
+            clearTimeout(displayMessage._t);
+            displayMessage._t = setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 4000);
+        }
+
+        function toggleLoading(isLoading) {
+            analyzeBtn.disabled = isLoading;
+            loadingMessage.classList.toggle('hidden', !isLoading);
+            document.getElementById('button-text').textContent = isLoading ? (currentLang === 'hi' ? 'विश्लेषण हो रहा है...' : 'Analyzing...') : texts[currentLang].analyze;
+            analyzeBtn.classList.toggle('opacity-70', isLoading);
+            analyzeBtn.classList.toggle('scale-95', isLoading);
+        }
+
+        // --- *** NEW: Image Compression Function *** ---
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions
+                    if (width > maxWidth) {
+                        height = (maxWidth / width) * height;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Get the compressed image as a Blob
+                    canvas.toBlob((blob) => {
+                        callback(blob);
+                    }, 'image/jpeg', quality);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // --- Image Preview Handler (NOW WITH COMPRESSION) ---
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0]; 
+            if (file) {
+                // 1. Show preview immediately (using original file)
+                const previewReader = new FileReader();
+                previewReader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    placeholderText.classList.add('hidden');
+                };
+                previewReader.readAsDataURL(file);
+
+                // 2. Compress the file in the background for upload
+                // This creates a fast, small file for the API
+                compressImage(file, 800, 0.7, (compressedBlob) => {
+                    selectedImage = compressedBlob;
+                    console.log(`Image compressed to: ${Math.round(compressedBlob.size / 1024)} KB`);
+                });
+
+            } else {
+                selectedImage = null;
+                imagePreview.classList.add('hidden');
+                placeholderText.classList.remove('hidden');
+            }
+        });
+
+        // Drag & drop for upload label
+        ;['dragenter','dragover'].forEach(evt => {
+            uploadLabel.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadLabel.classList.add('dragover');
+            });
+        });
+        ;['dragleave','drop'].forEach(evt => {
+            uploadLabel.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadLabel.classList.remove('dragover');
+            });
+        });
+        uploadLabel.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (!dt || !dt.files || !dt.files.length) return;
+            const file = dt.files[0];
+            if (!file.type.startsWith('image/')) {
+                displayMessage('Please drop an image file.', 'error');
+                return;
+            }
+            // Trigger the 'change' event as if a file was selected
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+        });
+
+        
+        // --- Submit Logic (THE INTEGRATION) ---
+        analyzeBtn.addEventListener('click', analyzeData);
+
+        async function analyzeData() {
+            
+            if (!selectedImage) {
+                displayMessage(currentLang === 'hi' ? "कृपया विश्लेषण करने से पहले एक छवि अपलोड करें।" : "Please upload a clear image of the infected leaf before analyzing.", 'error');
+                return;
+            }
+            
+            resultsArea.classList.add('hidden');
+            messageBox.classList.add('hidden');
+            toggleLoading(true);
+            window.speechSynthesis.cancel(); // Stop any previous speech
+
+            try {
+                const formData = new FormData();
+                // Append the COMPRESSED blob as a file
+                formData.append('file', selectedImage, 'compressed_image.jpg'); 
+                formData.append('symptoms_text', symptomsTextarea.value.trim()); 
+                formData.append('language', currentLang); 
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData 
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    let errorMessage = data.detail || 'An unknown error occurred during analysis.';
+                    if (response.status === 503) {
+                        errorMessage = "ML Model Not Found (503). Ensure the 'agrimind_model.keras' file is correctly placed next to main.py.";
+                    }
+                    displayMessage(`Error ${response.status}: ${errorMessage}`, 'error');
+                    return;
+                }
+
+                lastAnalysisData = data; // Store data for PDF & TTS
+                renderResults(data);
+                resultsArea.classList.remove('hidden');
+                displayMessage(currentLang === 'hi' ? "✅ विश्लेषण पूरा हुआ! विशेषज्ञ की सलाह तैयार है।" : "✅ Analysis Complete! Expert advice is ready.", 'success');
+
+            } catch (error) {
+                console.error("Fetch/Processing Error:", error);
+                displayMessage(currentLang === 'hi' ? "❌ नेटवर्क कनेक्शन विफल। सुनिश्चित करें कि आपका बैकएंड सर्वर http://127.0.0.1:8000 पर चल रहा है।" : "❌ Network connection failed. Ensure your backend server is running on http://127.0.0.1:8000.", 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        
+        function renderResults(data) {
+            resDiagnosis.textContent = data.disease_name;
+            resConfidence.textContent = `${(data.confidence_score * 100).toFixed(1)}%`;
+            resSeverity.textContent = data.severity_score;
+            
+            severityBox.className = 'p-3 rounded-xl border shadow-md'; // Reset classes
+            
+            if (data.severity_score >= 8) {
+                severityBox.classList.add('severity-high');
+            } else if (data.severity_score >= 4) {
+                severityBox.classList.add('severity-medium');
+            } else {
+                severityBox.classList.add('severity-low');
+            }
+            
+            resSymptomsCause.innerHTML = 
+                `<span class="font-bold text-lg text-yellow-900 dark:text-yellow-100">${texts[currentLang].symptoms}:</span> ${data.symptom_summary}<br><br>` + 
+                `<span class="font-bold text-lg text-yellow-900 dark:text-yellow-100">${texts[currentLang].cause}:</span> ${data.cause}`;
+
+            
+            resActionPlan.innerHTML = ''; 
+            data.action_plan.forEach(step => {
+                const li = document.createElement('li');
+                const parts = step.split(':');
+                if (parts.length > 1) {
+                    li.innerHTML = `<strong>${parts[0]}:</strong> ${parts.slice(1).join(':')}`;
+                } else {
+                    li.textContent = step;
+                }
+                resActionPlan.appendChild(li);
+            });
+        }
+        
+        // --- *** NEW: PDF Generation Logic *** ---
+        downloadPdfBtn.addEventListener('click', generatePDF);
+        
+        function generatePDF() {
+            if (!lastAnalysisData) {
+                displayMessage("Please analyze an image first to generate a report.", 'error');
+                return;
+            }
+
+            // Await jsPDF to be loaded
+            if (typeof jspdf === 'undefined') {
+                displayMessage("PDF library is still loading. Please try again in a moment.", 'error');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const t = texts[currentLang]; // Get translated titles
+            
+            // --- FIX for PDF Encoding Bug ---
+            // Remove emojis before passing to doc.text()
+            const pdfTitle = t.title.replace('🌿', '').trim();
+            const pdfSymptomsTitle = `${t.symptoms} & ${t.cause}`;
+            const pdfPlanTitle = t.planTitle;
+
+            // 1. Title
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text(pdfTitle, 105, 25, { align: 'center' });
+
+            // 2. Diagnosis Stats
+            doc.setFontSize(12);
+            doc.setFont('Helvetica', 'bold');
+            doc.text(`${t.diagnosis || 'Diagnosis'}:`, 20, 45);
+            doc.setFont('Helvetica', 'normal');
+            doc.text(lastAnalysisData.disease_name, 55, 45);
+            
+            doc.setFont('Helvetica', 'bold');
+            doc.text(`AI Confidence:`, 20, 55);
+            doc.setFont('Helvetica', 'normal');
+            doc.text(`${(lastAnalysisData.confidence_score * 100).toFixed(1)}%`, 55, 55);
+
+            doc.setFont('Helvetica', 'bold');
+            doc.text(`Urgency (1-10):`, 20, 65);
+            doc.setFont('Helvetica', 'normal');
+            doc.text(String(lastAnalysisData.severity_score), 55, 65);
+            
+            doc.line(20, 75, 190, 75); // Horizontal line
+
+            // 3. Symptoms & Cause
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text(pdfSymptomsTitle, 20, 88);
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(11);
+            
+            let y = 98;
+            const symptomsText = `${t.symptoms}: ${lastAnalysisData.symptom_summary}`;
+            const causeText = `${t.cause}: ${lastAnalysisData.cause}`;
+            
+            let splitText = doc.splitTextToSize(symptomsText, 170);
+            doc.text(splitText, 20, y);
+            y += (splitText.length * 7) + 5; // Add line height + margin
+            
+            splitText = doc.splitTextToSize(causeText, 170);
+            doc.text(splitText, 20, y);
+            y += (splitText.length * 7) + 10;
+            
+            doc.line(20, y, 190, y); // Horizontal line
+            y += 12;
+
+            // 4. Action Plan
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text(pdfPlanTitle, 20, y);
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(11);
+            y += 10;
+
+            lastAnalysisData.action_plan.forEach((step, index) => {
+                // Remove any potential stray emojis from AI
+                const cleanStep = step.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+                const stepText = `${index + 1}. ${cleanStep}`;
+                const splitStep = doc.splitTextToSize(stepText, 170);
+                doc.text(splitStep, 25, y);
+                y += (splitStep.length * 7) + 3; // Line height + margin
+            });
+
+            // 5. Save
+            doc.save("AgriMind_Report.pdf");
+        }
+
+
+        // --- *** NEW: Real Voice-to-Text Feature *** ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Stop after one phrase
+            recognition.interimResults = false; // Get final result
+
+            micBtn.addEventListener('click', () => {
+                if (isSpeaking) { // Don't listen if already speaking
+                    window.speechSynthesis.cancel();
+                }
+                try {
+                    // Set the language based on the toggle!
+                    recognition.lang = (currentLang === 'hi') ? 'hi-IN' : 'en-US'; 
+                    recognition.start();
+                } catch(e) {
+                    console.error("Speech recognition error:", e);
+                    displayMessage("Voice recognition service failed to start.", 'error');
+                }
+            });
+
+            recognition.onstart = () => {
+                // Visual cue: mic button pulses red
+                micBtn.classList.add('is-listening');
+                micBtn.disabled = true;
+                displayMessage(currentLang === 'hi' ? "सुन रहा है..." : "Listening...", 'info');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                symptomsTextarea.value = transcript;
+                displayMessage(currentLang === 'hi' ? "🎙️ ट्रांसक्राइब सफल!" : "🎙️ Transcription successful!", 'info');
+            };
+
+            recognition.onerror = (event) => {
+                let errorMsg = "Speech recognition error.";
+                if (event.error == 'no-speech') {
+                    errorMsg = currentLang === 'hi' ? "कोई आवाज़ नहीं मिली।" : "No speech detected. Please try again.";
+                } else if (event.error == 'audio-capture') {
+                    errorMsg = currentLang === 'hi' ? "माइक्रोफ़ोन त्रुटि।" : "Microphone error. Please check permissions.";
+                } else if (event.error == 'not-allowed') {
+                    errorMsg = currentLang === 'hi' ? "अनुमति नहीं है।" : "Microphone permission denied. Please allow access in your browser.";
+                }
+                displayMessage(errorMsg, 'error');
+            };
+
+            recognition.onend = () => {
+                // Revert mic button style
+                micBtn.classList.remove('is-listening');
+                micBtn.disabled = false;
+            };
+
+        } else {
+            // --- Fallback for unsupported browsers (like Firefox) ---
+            console.warn("SpeechRecognition API not supported. Using simulation.");
+            micBtn.addEventListener('click', () => {
+                const placeholderSymptom = texts[currentLang].micPlaceholder;
+                symptomsTextarea.value = placeholderSymptom;
+                displayMessage(currentLang === 'hi' ? "🎙️ वॉयस-टू-टेक्स्ट ट्रांसक्राइब सफल।" : "🎙️ Voice-to-Text (Simulated). API not supported.", 'info');
+            });
+        }
+        
+        // --- *** NEW: Real Text-to-Speech (TTS) Feature *** ---
+        speakBtn.addEventListener('click', speakReport);
+
+        function speakReport() {
+            if (!lastAnalysisData) {
+                displayMessage("Please analyze an image first.", 'error');
+                return;
+            }
+
+            if ('speechSynthesis' in window) {
+                // If already speaking, stop.
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    return; // onend will handle resetting the state
+                }
+                
+                const t = texts[currentLang];
+                
+                // 1. Create the full script to be read
+                const script = [
+                    `${t.resultsTitle.replace('🔬', '')}.`,
+                    `${t.diagnosis}: ${lastAnalysisData.disease_name}.`,
+                    `AI Confidence: ${resConfidence.textContent}.`,
+                    `Urgency Score: ${lastAnalysisData.severity_score}.`,
+                    `${t.symptoms}: ${lastAnalysisData.symptom_summary}.`,
+                    `${t.cause}: ${lastAnalysisData.cause}.`,
+                    t.planTitle,
+                    ...lastAnalysisData.action_plan
+                ].join('... '); // Join with pauses
+
+                const utterance = new SpeechSynthesisUtterance(script);
+                
+                // 2. Set language to match the UI
+                utterance.lang = (currentLang === 'hi') ? 'hi-IN' : 'en-US';
+
+                // 3. Add visual feedback
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    speakBtn.classList.add('is-speaking');
+                    speakBtn.querySelector('span').textContent = texts[currentLang].speakButtonStop;
+                };
+
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    speakBtn.classList.remove('is-speaking');
+                    speakBtn.querySelector('span').textContent = texts[currentLang].speakButton;
+                };
+                
+                utterance.onerror = (e) => {
+                    console.error("Speech synthesis error:", e);
+                    displayMessage("Speech synthesis failed. Your browser may not support this language.", 'error');
+                    isSpeaking = false;
+                    speakBtn.classList.remove('is-speaking');
+                    speakBtn.querySelector('span').textContent = texts[currentLang].speakButton;
+                };
+
+                window.speechSynthesis.cancel(); // Clear any old queue
+                window.speechSynthesis.speak(utterance);
+
+            } else {
+                displayMessage("Text-to-Speech is not supported in this browser.", 'error');
+            }
+        }
+
+
+        // --- Theme handling (DEFAULT DARK) ---
+        function applyTheme(mode) {
+            const root = document.documentElement;
+            if (mode === 'dark') {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+        }
+        applyTheme('dark'); // Dark mode by default
+        
+
+        
+        // --- Language translation logic (RE-ADDED) ---
+        const texts = {
+            en: {
+                title: "🌿 AgriMind Advisor",
+                pageTitle: "AgriMind Advisor",
+                subtitle: "Describe crop symptoms, speak, or upload an image to get a focused 3-day plan.",
+                placeholder: "Describe crop symptoms (e.g., 'Leaves are yellowing and curling, it is a tomato plant')...",
+                upload: "Upload Leaf Image",
+                analyze: "Analyze & Get Expert Advice",
+                micPlaceholder: "The leaves are yellowing from the edges and there is a fine powder on the fruit. It is tomato crop. I think I see small insects too.",
+                symptoms: "Symptoms",
+                cause: "Cause",
+                planTitle: "Immediate Action Plan",
+                pdfButton: "Download Report",
+                speakButton: "Speak Report",
+                speakButtonStop: "Stop Speaking",
+                diagnosis: "Diagnosis",
+                resultsTitle: "🔬 Diagnosis Report (Gemini Pro)"
+            },
+            hi: {
+                title: "🌿 एग्रीमाइंड सलाहकार",
+                pageTitle: "एग्रीमाइंड सलाहकार",
+                subtitle: "फसल के लक्षणों का वर्णन करें, बोलें या छवि अपलोड करें ताकि 3-दिन की योजना प्राप्त हो सके।",
+                placeholder: "फसल के लक्षणों का वर्णन करें (उदाहरण के लिए: 'पत्तियां पीली पड़ रही हैं और मुड़ रही हैं, यह टमाटर की फसल है')...",
+                upload: "पत्ती की छवि अपलोड करें",
+                analyze: "विश्लेषण करें और विशेषज्ञ सलाह लें",
+                micPlaceholder: "पत्तियां किनारों से पीली पड़ रही हैं और फल पर महीन पाउडर है। यह टमाटर की फसल है। मुझे लगता है कि मुझे छोटे कीड़े भी दिखाई दे रहे हैं।",
+                symptoms: "लक्षण",
+                cause: "कारण",
+                planTitle: "तत्काल कार्य योजना",
+                pdfButton: "रिपोर्ट डाउनलोड करें",
+                speakButton: "रिपोर्ट बोलें",
+                speakButtonStop: "बोलना बंद करें",
+                diagnosis: "निदान",
+                resultsTitle: "🔬 निदान रिपोर्ट (जेमिनी प्रो)"
+            }
+        };
+
+        function updateTexts(lang) {
+            currentLang = lang;
+            const t = texts[lang];
+            document.getElementById('main-title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('symptom-text').placeholder = t.placeholder;
+            document.getElementById('upload-label').lastChild.textContent = " " + t.upload;
+            document.getElementById('analyze-btn').querySelector('span').textContent = t.analyze;
+            document.getElementById('page-title').textContent = t.pageTitle;
+            document.getElementById('pdf-button-text').textContent = t.pdfButton;
+            document.getElementById('speak-btn').querySelector('span').textContent = t.speakButton;
+            
+            // Update results area titles if it's visible
+            if (!resultsArea.classList.contains('hidden')) {
+                document.getElementById('results-title').textContent = t.resultsTitle;
+                document.getElementById('symptoms-title').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${t.symptoms} & ${t.cause}`;
+                document.getElementById('plan-title').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg> ${t.planTitle}`;
+            }
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateTexts(this.value);
+            });
+        });
+
+        updateTexts(currentLang); // Set initial text
+    </script>
+</body>
+</html>
+
