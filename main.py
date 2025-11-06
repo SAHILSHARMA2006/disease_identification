@@ -52,7 +52,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Lifespan Event: Load Model at Startup ---
 @app.on_event("startup")
 async def load_ai_models():
     """Load the TensorFlow model when the FastAPI server starts."""
